@@ -31,6 +31,10 @@ def config_dir(env: Mapping[str, str] = os.environ, platform: str = sys.platform
     return Path(env.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "icloud-mail-mcp"
 
 
+# ICLOUD_ settings that came from the real environment rather than a settings file.
+# They win over the settings file, so --set warns about them.
+ENVIRONMENT_KEYS: set[str] = set()
+
 # The folder holding pyproject.toml, for running from a checkout (`python server.py`).
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,6 +46,7 @@ def load_env_files() -> Path:
     per-user file, then the checkout's .env. Returns the per-user file's path.
     """
     config_file = config_dir() / ".env"
+    ENVIRONMENT_KEYS.update(k for k in os.environ if k.startswith("ICLOUD_"))
     for env_file in (config_file, PROJECT_DIR / ".env"):
         warn_if_exposed(env_file)
         load_dotenv(env_file)

@@ -152,7 +152,16 @@ The read-only tools are safe to auto-approve. Keep anything that changes, delete
 
 ## Settings
 
-`--setup` writes the first three. Add any others to the same settings file.
+`--setup` writes the first three. Change any setting from the command line:
+
+```bash
+icloud-mail-mcp --settings                          # every setting, its value and its default
+icloud-mail-mcp --set ALLOW_SEND=true TIMEZONE=Europe/London
+icloud-mail-mcp --set DEFAULT_CALENDAR="Work"
+icloud-mail-mcp --unset ALLOW_SEND                  # back to the default
+```
+
+Names work with or without `ICLOUD_` and in any case (`allow_send` is fine). Each value is checked before anything is saved, so a typo changes nothing. Restart Claude afterwards. The password isn't set this way, because command lines end up in your shell history: use `--store-password`. You can also edit the settings file directly.
 
 | Setting | Default | What it does |
 |---------|---------|--------------|
@@ -172,6 +181,7 @@ The read-only tools are safe to auto-approve. Keep anything that changes, delete
 | `ICLOUD_MAX_ATTACHMENT_MB` | `25` | Largest attachment `get_attachment` saves |
 | `ICLOUD_ALLOW_EXECUTABLES` | `false` | Let `get_attachment` save programs and scripts (`.exe`, `.app`, `.command`, `.js` …) |
 | `ICLOUD_ATTACHMENT_DIR` | `~/Downloads/icloud-mail` | Where attachments are saved |
+| `ICLOUD_CALDAV_URL` / `ICLOUD_CARDDAV_URL` | iCloud's | Calendar and Contacts servers (https only) |
 | `ICLOUD_LOG_LEVEL` | `INFO` | `DEBUG` logs each IMAP/WebDAV call and its timing (never content) |
 
 Settings already in the environment, for example from an `"env"` block in the Claude config, override the file.
@@ -261,7 +271,8 @@ Set `ICLOUD_LOG_LEVEL=DEBUG` to log each IMAP and WebDAV call with its timing to
 | `dav.py` | A small WebDAV client for CalDAV and CardDAV, with keep-alive connections (proxy-aware) |
 | `files.py` | Saving attachments safely |
 | `cache.py` | A thread-safe TTL cache (tools run on worker threads) |
-| `cli.py` | `--setup`, `--check`, `--store-password`, and starting the server |
+| `cli.py` | `--setup`, `--check`, `--store-password`, `--settings`/`--set`/`--unset`, and starting the server |
+| `options.py` | Every setting, with the check `--set` runs on a new value |
 
 The root `server.py` keeps `python server.py` working.
 

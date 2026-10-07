@@ -13,7 +13,7 @@ from pathlib import Path
 
 from mcp.server.mcpserver.exceptions import ToolError
 
-from . import app, config
+from . import app, config, options
 from .config import APPLE_DOMAINS
 
 
@@ -36,6 +36,78 @@ def _save_settings(values: dict[str, str]) -> Path:
     for key, value in values.items():
         set_key(str(path), key, value, quote_mode="never")
     return path
+
+
+def _file_values(path: Path) -> dict[str, str]:
+    from dotenv import dotenv_values
+
+    if not path.exists():
+        return {}
+    return {k: (v or "") for k, v in dotenv_values(path).items()}
+
+
+def show_settings():
+    """Every setting: its value and where it comes from."""
+    path = config.current().config_file
+    saved = _file_values(path)
+    print(f"Settings file: {path}{'' if path.exists() else ' (not created yet)'}\n")
+    width = max(len(name) for name in options.OPTIONS)
+    for name, option in options.OPTIONS.items():
+        if name in config.ENVIRONMENT_KEYS:
+            shown = f"{os.environ.get(name, '')}   (from the environment; overrides the file)"
+        elif saved.get(name):
+            shown = saved[name]
+        else:
+            shown = f"-   (default: {option.default})" if option.default else "-"
+        print(f"  {name:<{width}}  {shown}")
+        print(f"  {'':<{width}}  {option.about}")
+    password_in_file = bool(saved.get(options.SECRET))
+    print(f"\n  {options.SECRET}: {'in the settings file' if password_in_file else 'kept in the system keychain'}")
+    print("\nChange one with: icloud-mail-mcp --set NAME=value   (e.g. --set ALLOW_SEND=true)")
+
+
+def set_settings(assignments: list[str]):
+    """Check every NAME=value first, then save them all, so a typo changes nothing."""
+    try:
+        changes = dict(options.parse_assignment(a) for a in assignments)
+    except options.InvalidValue as e:
+        sys.exit(f"Not saved: {e}.")
+    to_save = {k: v for k, v in changes.items() if v}
+    path = _save_settings(to_save) if to_save else config.current().config_file
+    _remove_settings([k for k, v in changes.items() if not v])
+    for name, value in changes.items():
+        print(f"  {name}={value}" if value else f"  {name} removed (back to the default)")
+    _after_change(path, changes)
+
+
+def unset_settings(names: list[str]):
+    try:
+        # The password may be removed from the file (once it's in the keychain), just not set here.
+        keys = [options.SECRET if options.full_name(n) == options.SECRET else options.lookup(n).name for n in names]
+    except options.InvalidValue as e:
+        sys.exit(f"Not changed: {e}.")
+    removed = _remove_settings(keys)
+    for key in keys:
+        print(f"  {key} removed (back to the default)" if key in removed else f"  {key} was not in the file")
+    _after_change(config.current().config_file, dict.fromkeys(keys, ""))
+
+
+def _remove_settings(keys: list[str]) -> list[str]:
+    from dotenv import unset_key
+
+    path = config.current().config_file
+    present = [k for k in keys if k in _file_values(path)]
+    for key in present:
+        unset_key(str(path), key, quote_mode="never")
+    return present
+
+
+def _after_change(path: Path, changes: dict[str, str]):
+    print(f"Saved to {path}")
+    for name in changes:
+        if name in config.ENVIRONMENT_KEYS:
+            print(f"Note: {name} is also set in your environment, which wins over the settings file. Remove it there.")
+    print("Restart Claude (fully quit and reopen) to use the new settings.")
 
 
 def _launch_command() -> list[str]:
@@ -177,6 +249,9 @@ def main():
     group.add_argument("--store-password", action="store_true", help="save the app-specific password to the keychain")
     group.add_argument("--check", action="store_true", help="test mail, calendar and contacts access")
     group.add_argument("--config-path", action="store_true", help="print where settings are read from")
+    group.add_argument("--settings", action="store_true", help="show every setting and its current value")
+    group.add_argument("--set", nargs="+", metavar="NAME=VALUE", help="change settings, e.g. --set ALLOW_SEND=true")
+    group.add_argument("--unset", nargs="+", metavar="NAME", help="remove settings, so their defaults apply")
     args = parser.parse_args()
     if args.setup:
         setup()
@@ -186,6 +261,12 @@ def main():
         check()
     elif args.config_path:
         print(config.current().config_file)
+    elif args.settings:
+        show_settings()
+    elif args.set:
+        set_settings(args.set)
+    elif args.unset:
+        unset_settings(args.unset)
     else:
         if os.isatty(0):
             print(
