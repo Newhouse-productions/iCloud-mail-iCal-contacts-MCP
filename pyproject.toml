@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling>=1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "icloud-mail-mcp"
+version = "0.3.0"
+description = "iCloud Mail, Calendar and Contacts for Claude, as a local MCP server."
+readme = "README.md"
+requires-python = ">=3.10"
+# Pinned to the versions this project is tested with.
+dependencies = [
+    "mcp==2.3.0",
+    "IMAPClient==4.1.0",
+    "keyring==25.7.0",
+    "python-dotenv==1.2.4",
+    "icalendar==7.3.0",
+    "recurring-ical-events==3.8.2",
+    "tzlocal==5.4.4",
+    "tzdata>=2024.1; sys_platform == 'win32'",
+    "typing_extensions>=4.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "radicale==3.8.1",
+    "ruff==0.16.10",
+    "mypy==2.4.0",
+]
+
+[project.scripts]
+icloud-mail-mcp = "icloud_mail_mcp.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["icloud_mail_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E731"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["icloud_mail_mcp"]
+
+[tool.mypy]
+packages = ["icloud_mail_mcp"]
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = ["imapclient.*", "icalendar.*", "recurring_ical_events.*", "keyring.*", "tzlocal.*"]
+ignore_missing_imports = true

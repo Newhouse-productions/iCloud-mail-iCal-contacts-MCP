@@ -1,0 +1,3 @@
+# Dependencies are defined (and pinned) in pyproject.toml. This installs the
+# package and the `icloud-mail-mcp` command into the current environment.
+-e .
