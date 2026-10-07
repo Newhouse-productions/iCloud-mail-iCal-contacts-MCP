@@ -8,6 +8,8 @@ version = "0.3.0"
 description = "iCloud Mail, Calendar and Contacts for Claude, as a local MCP server."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE.md"]
 # Pinned to the versions this project is tested with.
 dependencies = [
     "mcp==2.3.0",

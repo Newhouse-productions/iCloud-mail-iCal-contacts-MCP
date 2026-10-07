@@ -294,4 +294,8 @@ The root `server.py` keeps `python server.py` working.
 
 ## License
 
-This project began from [bufordeeds/icloud-mail-mcp](https://github.com/bufordeeds/icloud-mail-mcp) by [@bufordeeds](https://github.com/bufordeeds), whose work inspired it, and has since been substantially rewritten and extended (see [Changes from the original](#changes-from-the-original)). No license file has been added yet.
+[PolyForm Noncommercial 1.0.0](LICENSE.md). You're free to use, change and share this for any noncommercial purpose: personal use, study, hobby projects, and use by charities, schools and public bodies. Commercial use needs permission; open an issue to ask.
+
+Copyright 2026 Newhouse Productions.
+
+This project began from [bufordeeds/icloud-mail-mcp](https://github.com/bufordeeds/icloud-mail-mcp) by [@bufordeeds](https://github.com/bufordeeds), whose work inspired it, and has since been substantially rewritten and extended (see [Changes from the original](#changes-from-the-original)).
