@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.32.4"]
+requires = ["hatchling>=1.33.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -18,17 +18,17 @@ dependencies = [
     "python-dotenv==1.2.4",
     "icalendar==7.3.0",
     "recurring-ical-events==3.8.2",
-    "tzlocal==5.4.4",
-    "tzdata>=2024.1; sys_platform == 'win32'",
+    "tzlocal==5.4.5",
+    "tzdata>=2026.6; sys_platform == 'win32'",
     "typing_extensions>=4.12",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest==9.1.1",
-    "radicale==3.8.1",
-    "ruff==0.16.10",
-    "mypy==2.4.0",
+    "pytest==9.2.0",
+    "radicale==3.9.0",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
 ]
 
 [project.scripts]
